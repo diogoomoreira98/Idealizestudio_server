@@ -2,7 +2,6 @@ require('dotenv').config();
 
 const express = require('express');
 const nodemailer = require('nodemailer');
-const fetch = require('node-fetch'); // para validar o reCAPTCHA
 const cors = require('cors');
 
 const app = express();
