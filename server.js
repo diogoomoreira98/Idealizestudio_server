@@ -2,37 +2,58 @@ require('dotenv').config();
 
 const express = require('express');
 const nodemailer = require('nodemailer');
+const fetch = require('node-fetch'); // para validar o reCAPTCHA
+const cors = require('cors');
+
 const app = express();
 app.use(express.json());
-const cors = require('cors');
 app.use(cors());
 
 app.post('/enviar-email', async (req, res) => {
-  const { nome, email, mensagem } = req.body;
+  const { nome, email, mensagem, recaptchaToken } = req.body;
 
-  const transporter = nodemailer.createTransport({
-    host: 'webdomain03.dnscpanel.com',     
-    port: 465,                              
-    secure: true,                          
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    }
-  });
-
-  const mailOptions = {
-    from: email,
-    to: process.env.EMAIL_USER,
-    subject: `Mensagem de ${nome}`,
-    text: mensagem
-  };
+  // 1. Validar reCAPTCHA
+  if (!recaptchaToken) {
+    return res.status(400).json({ message: 'ReCAPTCHA não preenchido.' });
+  }
 
   try {
+    const recaptchaResponse = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `secret=${process.env.RECAPTCHA_SECRET}&response=${recaptchaToken}`
+    });
+
+    const recaptchaData = await recaptchaResponse.json();
+
+    if (!recaptchaData.success) {
+      return res.status(400).json({ message: 'Falha na verificação do reCAPTCHA.' });
+    }
+
+    // 2. Enviar email (se reCAPTCHA for válido)
+    const transporter = nodemailer.createTransport({
+      host: 'webdomain03.dnscpanel.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+
+    const mailOptions = {
+      from: email,
+      to: process.env.EMAIL_USER,
+      subject: `Mensagem de ${nome}`,
+      text: mensagem
+    };
+
     await transporter.sendMail(mailOptions);
     res.status(200).json({ message: 'Email enviado com sucesso!' });
+
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Erro ao enviar email.' });
+    res.status(500).json({ message: 'Erro ao enviar email ou validar reCAPTCHA.' });
   }
 });
 
