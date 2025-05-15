@@ -9,7 +9,9 @@ app.post('/enviar-email', async (req, res) => {
   const { nome, email, mensagem } = req.body;
 
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'webdomain03.dnscpanel.com',     
+    port: 465,                              
+    secure: true,                          
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS
