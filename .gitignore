@@ -1,0 +1,3 @@
+# Ignorar ficheiros sensíveis e dependências
+.env
+node_modules/
