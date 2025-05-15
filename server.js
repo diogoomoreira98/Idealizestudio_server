@@ -1,11 +1,11 @@
 require('dotenv').config();
-const cors = require('cors');
-app.use(cors());
 
 const express = require('express');
 const nodemailer = require('nodemailer');
 const app = express();
 app.use(express.json());
+const cors = require('cors');
+app.use(cors());
 
 app.post('/enviar-email', async (req, res) => {
   const { nome, email, mensagem } = req.body;
