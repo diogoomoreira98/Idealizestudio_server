@@ -57,7 +57,7 @@ app.post('/enviar-email', async (req, res) => {
 });
 
 app.post('/forwardEmail', async (req, res) => {
-  const { title, message, email, identifier, recaptchaToken } = req.body;
+  const { nome, message, email, identifier, recaptchaToken } = req.body;
 
   if (!recaptchaToken) {
     return res.status(400).json({ message: 'ReCAPTCHA não preenchido.' });
@@ -89,7 +89,7 @@ app.post('/forwardEmail', async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: 'geral@idealize.pt',
-      subject: `[${identifier}] ${title}`,
+      subject: `[${identifier}] ${nome}`,
       text: `Mensagem: ${message}\n\nEmail do requerente: ${email}`
     };
 
